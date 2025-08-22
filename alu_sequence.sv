@@ -9,19 +9,16 @@ class my_sequence extends uvm_sequence#(my_item);
         virtual task body();
                 my_item req;
                 for (int i = 0; i < `no_of_trans; i++) begin
-                        req = my_item::type_id::create($sformatf("req_%0d", i));
+                        req = my_item::type_id::create("req");
 
                         start_item(req);
-                        if (!req.randomize()) begin
-                                `uvm_error(get_type_name(), "Randomization failed");
-                        end
+                        assert (req.randomize());
                         finish_item(req);
 
-                        `uvm_info(get_type_name(),
-                        $sformatf("Sent transaction %0d at time %0t", i, $time),UVM_LOW)
+                        //`uvm_info(get_type_name(), $sformatf("Sent transaction %0d at time %0t", i, $time),UVM_LOW)
                 end
 
-                `uvm_info(get_type_name(), "@@@@@@@@@@@@@@@@@@@@@@@@@@@@Sent all transactions@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", UVM_LOW);
+                //`uvm_info(get_type_name(), "@@@@@@@@@@@@@@@@@@@@@@@@@@@@Sent all transactions@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", UVM_LOW);
         endtask
 
 endclass
