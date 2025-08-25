@@ -45,7 +45,7 @@ class my_item extends uvm_sequence_item;
 
         //constriants if we want
         //constraint c1{INP_VALID == 2'b11;}
-
+        //constraint c4{CE ==1;}
         constraint c2{(MODE == 0) -> CMD inside {[0:13]};}
         constraint c3{(MODE == 1) -> CMD inside {[0:10]};}
 
