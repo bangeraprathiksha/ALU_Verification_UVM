@@ -1,16 +1,9 @@
-
 `include "defines.sv"
-//`include "uvm_macros.svh"
 `include "defines.sv"
-`uvm_analysis_imp_decl(_monitor)
-`uvm_analysis_imp_decl(_driver)
 
 class my_scoreboard extends uvm_scoreboard;
   `uvm_component_utils(my_scoreboard)
-//  uvm_analysis_imp_driver  #(my_item, my_scoreboard) driver_export;
-// uvm_analysis_imp_monitor #(my_item, my_scoreboard) item_collected_export;
 
-uvm_tlm_analysis_fifo #(my_item) drv_fifo;
 uvm_tlm_analysis_fifo #(my_item) mon_fifo;
 
 
@@ -23,30 +16,18 @@ uvm_tlm_analysis_fifo #(my_item) mon_fifo;
 
   function new (string name = "my_scoreboard", uvm_component parent);
     super.new(name, parent);
-
   endfunction
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    //item_collected_export = new("item_collected_export", this);
-    //driver_export = new("driver_export",this);
 
-        drv_fifo = new("drv_fifo", this);
         mon_fifo = new("mon_fifo", this);
 
         if(!uvm_config_db#(virtual alu_interface)::get(this,"","vif",vif))
       `uvm_fatal(get_type_name(),"Virtual interface not found in alu_scoreboard")
   endfunction
 
-   //driver write
 
-
-function void write_driver(my_item t);
-  my_item c = my_item::type_id::create("drv_copy");
-        `uvm_info("SCOREBOARD", "Got txn from DRIVER", UVM_LOW)
-  c.copy(t);
-  drv_fifo.write(c);
-endfunction
 
 function void write_monitor(my_item t);
   my_item c = my_item::type_id::create("mon_copy");
@@ -57,14 +38,13 @@ endfunction
 
 
 task run_phase(uvm_phase phase);
-  my_item drv_item, mon_item, exp_item;
+  my_item  mon_item, exp_item;
   forever begin
         `uvm_info("SCOREBOARD", "Waiting for drv/mon txn...", UVM_LOW)
-    drv_fifo.get(drv_item); // waits until driver gives one
     mon_fifo.get(mon_item); // waits until monitor gives one
     exp_item = my_item::type_id::create("exp_item");
-    exp_item.copy_inputs(drv_item);
-    run_ref_model(drv_item, exp_item);
+    exp_item.copy_inputs(mon_item);
+    run_ref_model(mon_item, exp_item);
     compare_and_report(mon_item, exp_item);
   end
 endtask
@@ -148,6 +128,10 @@ virtual task run_ref_model(input my_item tr, output my_item exp_item);
               exp_item.RES = ( (tr.OPA << 1) * tr.OPB );
             end
 
+            4'b0100: exp_item.RES = tr.OPA + 1;
+            4'b0101: exp_item.RES = tr.OPA - 1;
+            4'b0110: exp_item.RES = tr.OPB + 1;
+            4'b0111: exp_item.RES = tr.OPB - 1;
             default: zero_outputs(exp_item);
           endcase
         end
@@ -160,15 +144,22 @@ virtual task run_ref_model(input my_item tr, output my_item exp_item);
             4'b0011: exp_item.RES = {1'b0, ~(tr.OPA | tr.OPB)};
             4'b0100: exp_item.RES = {1'b0, tr.OPA ^ tr.OPB};
             4'b0101: exp_item.RES = {1'b0, ~(tr.OPA ^ tr.OPB)};
-            4'b1100: begin         
-                      exp_item.RES = (shift==0) ? {1'b0,tr.OPA} :{1'b0,(tr.OPA<<shift)|(tr.OPA>>(`width-shift))};                                 
-                      exp_item.ERR = (`width > 3 && |tr.OPB[`width-1:4]);                                                                         
-            end                                                                                                               
+            4'b1100: begin
+
+          exp_item.RES = (shift==0) ? {1'b0,tr.OPA} :{1'b0,(tr.OPA<<shift)|(tr.OPA>>(`width-shift))};
+                     exp_item.ERR = (`width > 3 && |tr.OPB[`width-1:4]);
+                     end
             4'b1101: begin
-                      exp_item.RES = (shift==0) ? {1'b0,tr.OPA} : {1'b0,(tr.OPA>>shift)|(tr.OPA<<(`width-shift))};                                
-                      exp_item.ERR = (`width > 3 && |tr.OPB[`width-1:4]);                                                                         
-            end
-            default: zero_outputs(exp_item);
+                     exp_item.RES = (shift==0) ? {1'b0,tr.OPA} : {1'b0,(tr.OPA>>shift)|(tr.OPA<<(`width-shift))};
+                     exp_item.ERR = (`width > 3 && |tr.OPB[`width-1:4]);
+                        end
+            4'b0110: exp_item.RES = {1'b0, ~tr.OPA};
+            4'b1000: exp_item.RES = {1'b0, tr.OPA >> 1};
+            4'b1001: exp_item.RES = {1'b0, tr.OPA << 1};
+            4'b0111: exp_item.RES = {1'b0, ~tr.OPB};
+            4'b1010: exp_item.RES = {1'b0, tr.OPB >> 1};
+            4'b1011: exp_item.RES = {1'b0, tr.OPB << 1};
+                default: zero_outputs(exp_item);
           endcase
         end
       end
@@ -257,6 +248,15 @@ task compare_and_report(my_item dut, my_item exp_item);
   $display("--------------------------------------------------\n");
 
 endtask
+
+function void report_phase(uvm_phase phase);
+  super.report_phase(phase);
+  $display("===============================================");
+  $display(" SCOREBOARD SUMMARY: ");
+  $display("   TOTAL MATCHES   = %0d", MATCH);
+  $display("   TOTAL MISMATCHES= %0d", MISMATCH);
+  $display("===============================================");
+endfunction
 
 
 endclass
