@@ -31,10 +31,10 @@ class my_monitor extends uvm_monitor;
 
 
    virtual task run_phase(uvm_phase phase);
-                repeat(3) @(vif.mon_cb);   // wait some extra setup time
+                repeat(2) @(vif.mon_cb);   // wait some extra setup time
 
-          for(int i=0; i< `no_of_trans ; i++) begin
-                        repeat(3)@(vif.mon_cb);
+          forever begin
+                        repeat(1)@(vif.mon_cb);
 
                         if (multiplication_check())begin
                                 repeat(1) @(vif.mon_cb)
@@ -54,7 +54,7 @@ class my_monitor extends uvm_monitor;
                                 item.E     = vif.mon_cb.E;
                                 item.ERR   = vif.mon_cb.ERR;
 
-                                $display("time[%0t] MONITOR PASSING THE DATA TO SCOREBOARD OPA=%0d | OPB=%0d | CMD=%0d | MODE=%0d | CE=%0d | CIN=%0d | RES = %0d | OFLOW = %0d | COUT = %0d | G = %0d | L = %0d | E = %0d | ERR = %0d ",$time, item.OPA, item.OPB, item.CMD, item.MODE, item.CE, item.CIN, item.RES, item.OFLOW, item.COUT, item.G, item.L, item.E, item.ERR);
+                                $display("time[%0t] MONITOR PASSING THE DATA TO SCOREBOARD OPA=%0d | OPB=%0d |INP_VALID = %0d | CMD=%0d | MODE=%0d | CE=%0d | CIN=%0d | RES = %0d | OFLOW = %0d | COUT = %0d | G = %0d | L = %0d | E = %0d | ERR = %0d ",$time, item.OPA, item.OPB,item.INP_VALID, item.CMD, item.MODE, item.CE, item.CIN, item.RES, item.OFLOW, item.COUT, item.G, item.L, item.E, item.ERR);
                         end
                         else begin
 
@@ -73,13 +73,14 @@ class my_monitor extends uvm_monitor;
                                 item.E     = vif.mon_cb.E;
                                 item.G     = vif.mon_cb.G;
                                 item.L     = vif.mon_cb.L;
-                                $display("time[%0t] MONITOR PASSING THE DATA TO SCOREBOARD OPA=%0d | OPB=%0d | CMD=%0d | MODE=%0d | CE=%0d | CIN=%0d | RES = %0d | OFLOW = %0d | COUT = %0d | G = %0d | L = %0d | E = %0d | ERR = %0d ",$time, item.OPA, item.OPB, item.CMD, item.MODE, item.CE, item.CIN, item.RES, item.OFLOW, item.COUT, item.G, item.L, item.E, item.ERR);
+                                $display("time[%0t] MONITOR PASSING THE DATA TO SCOREBOARD OPA=%0d | OPB=%0d | INP_VALID=%0d | CMD=%0d | MODE=%0d | CE=%0d | CIN=%0d | RES = %0d | OFLOW = %0d | COUT = %0d | G = %0d | L = %0d | E = %0d | ERR = %0d ",$time, item.OPA, item.OPB,item.INP_VALID, item.CMD, item.MODE, item.CE, item.CIN, item.RES, item.OFLOW, item.COUT, item.G, item.L, item.E, item.ERR);
                         end
-                        //repeat(1)@(vif.mon_cb);
                   item_collected_port.write(item);
+                repeat(1) @(vif.mon_cb);
                 end
-                //@(vif.mon_cb);
                 $display("monitor task done");
+                //repeat(1) @(vif.mon_cb);
         endtask
+
 
 endclass
