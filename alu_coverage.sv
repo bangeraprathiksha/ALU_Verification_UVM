@@ -1,8 +1,6 @@
 `include "defines.sv"
-// Declare macros OUTSIDE any class, in global scope
 `uvm_analysis_imp_decl(_mon_cg)
 `uvm_analysis_imp_decl(_drv_cg)
-
 class my_coverage extends uvm_component;
     `uvm_component_utils(my_coverage)
 
@@ -137,3 +135,4 @@ class my_coverage extends uvm_component;
         endfunction
 
 endclass
+                                                                       
