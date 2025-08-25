@@ -1,4 +1,5 @@
 
+
 `include "defines.sv"
 class my_environment extends uvm_env;
         my_agent active_agh;
@@ -23,8 +24,6 @@ class my_environment extends uvm_env;
         function void connect_phase(uvm_phase phase);
 
                 active_agh.monh.item_collected_port.connect(sch.mon_fifo.analysis_export);
-                //agh.drvh.tlm_analysis_port_drv.connect(sch.drv_fifo.analysis_export);
-
 
                 passive_agh.monh.item_collected_port.connect(covh.aport_mon1);
                 active_agh.monh.item_collected_port.connect(covh.aport_drv1);
