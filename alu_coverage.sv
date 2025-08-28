@@ -135,4 +135,3 @@ class my_coverage extends uvm_component;
         endfunction
 
 endclass
-                                                                       
