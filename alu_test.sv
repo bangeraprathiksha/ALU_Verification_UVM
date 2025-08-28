@@ -23,8 +23,6 @@ class my_test extends uvm_test;
     seqh.start(envh.active_agh.seqr);
     seqh.start(envh.passive_agh.seqr);
 
-    //phase.phase_done.set_drain_time(this,20);
-        //#1000ns;
     phase.drop_objection(this);
   endtask
 
