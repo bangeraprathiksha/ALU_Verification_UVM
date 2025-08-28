@@ -1,3 +1,26 @@
+/*`include "defines.sv"
+class my_driver extends uvm_driver #(my_item);
+    virtual alu_interface vif;
+
+    bit [3:0] cmd_fixed;
+    bit ce_fixed;
+    bit mode_fixed;
+
+    uvm_analysis_port #(my_item) tlm_analysis_port_drv;
+
+    `uvm_component_utils(my_driver)
+
+    function new(string name = "my_driver", uvm_component parent);
+        super.new(name, parent);
+        tlm_analysis_port_drv = new("tlm_analysis_port_drv", this);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        if (!uvm_config_db #(virtual alu_interface)::get(this,"","vif",vif))
+            `uvm_fatal(get_type_name(), "failed to get interface signals");
+    endfunction
+
     virtual task run_phase(uvm_phase phase);
         my_item req;
         forever begin
